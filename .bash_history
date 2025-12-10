@@ -1917,3 +1917,960 @@ sudo -i
 git init -b main
 #1765294715
 $ git add .
+#1765294727
+git add .
+#1765294742
+git commit -m "First commit"
+#1765294912
+git remote add origin https://github.com/qianyulin1015-sys/deepOLA-Replication.git
+#1765294928
+git remote -v
+#1765295005
+cd DeepOLA
+#1765295011
+git remote add origin https://github.com/qianyulin1015-sys/deepOLA-Replication.git
+#1765295234
+git add .
+#1765295446
+cd ..
+#1765295449
+git status
+#1765295490
+git commit -m 
+#1765295545
+git commit -m
+#1765295565
+git branch -M main
+#1765295574
+git push -u origin main
+#1765295596
+git log --oneline -5
+#1765295606
+git status
+#1765295617
+git branch -r
+#1765295884
+git ls-files
+#1765295898
+git status
+#1765295984
+git remote -v
+#1765296264
+git push -u origin main
+#1765296903
+git remote add origin https://github.com/qianyulin1015-sys/deepOLA-Replication.git
+#1765296913
+git remote -v
+#1765296945
+git push -u origin main
+#1765297365
+git push -f origin main
+#1765297774
+cd ~/DeepOLA
+#1765297774
+cat > verify_results.sh << 'EOF'
+#!/bin/bash
+echo "=== DeepOLA 实验结果完整性验证 ==="
+echo "验证时间: $(date)"
+echo ""
+
+# 1. 检查核心图表
+echo "1. 核心可视化图表检查："
+required_figures=("fig7_tpch.png" "fig8_tpch.error.png" "fig9_tpch.ola.png" "fig10_tpch.ola.png" "fig11_depth.png")
+for fig in "${required_figures[@]}"; do
+    if [ -f "./results/viz/$fig" ]; then
+        size=$(stat -c%s "./results/viz/$fig" 2>/dev/null || stat -f%z "./results/viz/$fig" 2>/dev/null)
+        size_kb=$((size/1024))
+        echo "  ✅ $fig ($size_kb KB)"
+    else
+        echo "  ❌ $fig - 缺失！"
+    fi
+done
+
+echo ""
+# 2. 检查性能数据
+echo "2. 性能数据文件检查："
+scale=${SCALE:-10}
+systems=("postgres" "polars" "wake" "wanderjoin")
+for sys in "${systems[@]}"; do
+    sys_dir="./results/$sys/scale=$scale"
+    if [ -d "$sys_dir" ]; then
+        file_count=$(find "$sys_dir" -type f 2>/dev/null | wc -l)
+        csv_count=$(find "$sys_dir" -name "*.csv" 2>/dev/null | wc -l)
+        echo "  ✅ $sys: $file_count 个文件 ($csv_count 个CSV)"
+    else
+        echo "  ❌ $sys: 目录不存在"
+    fi
+done
+
+echo ""
+# 3. 统计总览
+echo "3. 结果总览："
+total_files=$(find ./results -type f 2>/dev/null | wc -l)
+total_size=$(du -sh ./results 2>/dev/null | cut -f1)
+echo "  文件总数: $total_files"
+echo "  总大小: $total_size"
+EOF
+
+#1765297774
+chmod +x verify_results.sh
+#1765297774
+./verify_results.sh
+#1765297802
+cd..
+#1765297807
+cd ..
+#1765297986
+# 生成 Fig 7 (TPC-H Performance)
+#1765297986
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765297988
+# 生成 Fig 8 (Error Analysis)
+#1765297988
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/viz:/results/viz:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch_error.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765298022
+cd DeepOLA
+#1765298067
+# 生成 Fig 7 (TPC-H Performance)
+#1765298067
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765298068
+# 生成 Fig 8 (Error Analysis)
+#1765298068
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/viz:/results/viz:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch_error.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765298196
+export SCALE=10
+#1765298196
+export PARTITION=10
+#1765298196
+export NUM_RUNS=10
+#1765298206
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765298505
+ls -R results/
+#1765298632
+cd ..
+#1765298634
+sudo usermod -aG docker $USER
+#1765298694
+sudo systemctl enable docker
+#1765298707
+docker pull supawit2/deepola-data:sigmod2023
+#1765298738
+docker pull supawit2/deepola-polars:sigmod2023
+#1765298770
+docker pull supawit2/deepola-wanderjoin:sigmod2023
+#1765298802
+docker pull supawit2/deepola-wake:sigmod2023
+#1765298833
+docker pull supawit2/deepola-viz:sigmod2023
+#1765299055
+# 生成数据
+#1765299055
+docker run --rm     -v ${DATA_DIR}:/dataset/tpch:rw     --name dataset deepola-data:sigmod2023     bash data-gen.sh ${SCALE} ${PARTITION} /dataset/tpch
+#1765299055
+# 转换为 Parquet
+#1765299055
+docker run --rm     -v ${DATA_DIR}:/dataset/tpch:rw     --name dataset deepola-data:sigmod2023     python3 convert-to-parquet.py /dataset/tpch/scale=${SCALE}/partition=${PARTITION}/tbl
+#1765299087
+docker run --rm     -v ${DATA_DIR}:/dataset/tpch:rw     --name dataset deepola-data:sigmod2023     bash data-gen.sh ${SCALE} ${PARTITION} /dataset/tpch
+#1765299114
+cd DeepOLA
+#1765299140
+export DATA_DIR=$(pwd)/experiment/dataset
+#1765299140
+mkdir -p ${DATA_DIR}
+#1765299150
+export SCALE=10
+#1765299150
+export PARTITION=10
+#1765299150
+export NUM_RUNS=10
+#1765299159
+docker run --rm     -v ${DATA_DIR}:/dataset/tpch:rw     --name dataset deepola-data:sigmod2023     bash data-gen.sh ${SCALE} ${PARTITION} /dataset/tpch
+#1765300489
+docker run --rm     -v ${DATA_DIR}:/dataset/tpch:rw     --name dataset deepola-data:sigmod2023     python3 convert-to-parquet.py /dataset/tpch/scale=${SCALE}/partition=${PARTITION}/tbl
+#1765300611
+# 设置 Postgres 路径变量
+#1765300611
+export QUERY_DIR=./resources/tpc-h/queries
+#1765300611
+export POSTGRES_DIR=./tmp/postgres/scale=${SCALE}/partition=${PARTITION}
+#1765300611
+export OUTPUT_DIR=./results/postgres/scale=${SCALE}/
+#1765300611
+# 初始化 Setup
+#1765300611
+./baselines/postgres/experiment-setup.sh ${DATA_DIR} ${QUERY_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION}
+#1765300616
+# 运行查询测试 [cite: 82]
+#1765300616
+./baselines/postgres/experiment-time.sh ${QUERY_DIR} ${OUTPUT_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION} ${NUM_RUNS} 1 22
+#1765300616
+# 提取时间数据 [cite: 84]
+#1765300616
+python3 baselines/postgres/extract-time.py ${OUTPUT_DIR} ${SCALE} ${PARTITION} ${NUM_RUNS} 1 22 ${OUTPUT_DIR}/timings.csv
+#1765300630
+export QUERY_DIR=./resources/tpc-h/queries
+#1765300630
+export POSTGRES_DIR=./tmp/postgres/scale=${SCALE}/partition=${PARTITION}
+#1765300630
+export OUTPUT_DIR=./results/postgres/scale=${SCALE}/
+#1765300639
+./baselines/postgres/experiment-setup.sh ${DATA_DIR} ${QUERY_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION}
+#1765298650
+newgrp docker
+#1765335858
+cd DeepOLA
+#1765335881
+export QUERY_DIR=./resources/tpc-h/queries
+#1765335881
+export POSTGRES_DIR=./tmp/postgres/scale=${SCALE}/partition=${PARTITION}
+#1765335881
+export OUTPUT_DIR=./results/postgres/scale=${SCALE}/
+#1765335916
+./baselines/postgres/experiment-setup.sh ${DATA_DIR} ${QUERY_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION}
+#1765335933
+./baselines/postgres/experiment-time.sh ${QUERY_DIR} ${OUTPUT_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION} ${NUM_RUNS} 1 22
+#1765335945
+python3 baselines/postgres/extract-time.py ${OUTPUT_DIR} ${SCALE} ${PARTITION} ${NUM_RUNS} 1 22 ${OUTPUT_DIR}/timings.csv
+#1765336298
+# === 必须先运行这部分 ===
+#1765336298
+# 设置基础参数
+#1765336298
+export SCALE=10
+#1765336298
+export PARTITION=10
+#1765336298
+export NUM_RUNS=10
+#1765336298
+# 设置路径参数 (注意：DATA_DIR 必须是绝对路径)
+#1765336298
+export DATA_DIR=$(pwd)/experiment/dataset
+#1765336298
+export QUERY_DIR=$(pwd)/resources/tpc-h/queries
+#1765336298
+export POSTGRES_DIR=$(pwd)/tmp/postgres/scale=${SCALE}/partition=${PARTITION}
+#1765336298
+export OUTPUT_DIR=$(pwd)/results/postgres/scale=${SCALE}/
+#1765336298
+# 创建必要的目录 (防止因为目录不存在报错)
+#1765336298
+mkdir -p ${DATA_DIR}
+#1765336298
+mkdir -p ${POSTGRES_DIR}
+#1765336298
+mkdir -p ${OUTPUT_DIR}
+#1765336310
+echo "Scale is: $SCALE"
+#1765336310
+echo "Data Dir is: $DATA_DIR"
+#1765336325
+# 步骤 1: 初始化 Postgres (这一步比较慢，请耐心等待)
+#1765336325
+./baselines/postgres/experiment-setup.sh ${DATA_DIR} ${QUERY_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION}
+#1765336331
+# 步骤 2: 运行查询测试
+#1765336331
+# 注意：这里原文档或者你的命令可能少了一个参数，根据报错提示 "Expected 9 arguments"，
+#1765336331
+# 通常脚本需要 start-run 参数。根据之前的命令结构，补全如下：
+#1765336331
+./baselines/postgres/experiment-time.sh ${QUERY_DIR} ${OUTPUT_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION} ${NUM_RUNS} 0 1 22
+#1765336343
+# (注意：上面的 0 代表 start-run，1 代表 start-query，22 代表 end-query)
+#1765336343
+# 步骤 3: 提取时间数据
+#1765336343
+python3 baselines/postgres/extract-time.py ${OUTPUT_DIR} ${SCALE} ${PARTITION} ${NUM_RUNS} 1 22 ${OUTPUT_DIR}/timings.csv
+#1765336460
+docker ps -a | grep pgsql
+#1765336493
+ls ${DATA_DIR}/scale=${SCALE}/partition=${PARTITION}/tbl/*.tbl
+#1765336503
+docker rm -f pgsql
+#1765336511
+# 1. 确保目录权限开放
+#1765336511
+sudo chmod -R 777 ${DATA_DIR}
+#1765336511
+# 2. 重新运行 setup
+#1765336511
+./baselines/postgres/experiment-setup.sh ${DATA_DIR} ${QUERY_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION}
+#1765336588
+echo "DATA_DIR: $DATA_DIR"
+#1765336588
+echo "POSTGRES_DIR: $POSTGRES_DIR"
+#1765336636
+sudo netstat -nlp | grep 5432
+#1765336650
+# 1. 强制清理旧容器
+#1765336650
+docker rm -f pgsql
+#1765336650
+# 2. 手动启动 Postgres (去掉 --rm，加上 -d)
+#1765336650
+docker run -d --name pgsql     -v ${POSTGRES_DIR}:/var/lib/postgresql/data     -v ${DATA_DIR}:/data:ro     -e POSTGRES_PASSWORD=postgres     postgres:13
+#1765336852
+# 3. 等待 3 秒
+#1765336852
+sleep 3
+#1765336855
+# 4. 查看容器状态和日志 (这步最关键)
+#1765336855
+echo "=== 容器状态 ==="
+#1765336855
+docker ps -a | grep pgsql
+#1765336855
+echo -e "\n=== 错误日志 ==="
+#1765336855
+docker logs pgsql
+#1765336864
+# 确保权限
+#1765336864
+sudo chmod -R 777 ${DATA_DIR}
+#1765336864
+# 清理旧的
+#1765336864
+docker rm -f pgsql
+#1765336864
+# 运行初始化脚本
+#1765336864
+./baselines/postgres/experiment-setup.sh ${DATA_DIR} ${QUERY_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION}
+#1765336958
+# 1. 停止并删除任何残留容器
+#1765336958
+docker rm -f pgsql
+#1765336958
+# 2. 【关键】强制删除之前生成的 Postgres 临时数据目录
+#1765336958
+# (因为是由 Docker 生成的，可能需要 sudo 权限才能删掉)
+#1765336958
+sudo rm -rf ${POSTGRES_DIR}
+#1765336958
+# 3. 重新创建空目录
+#1765336958
+mkdir -p ${POSTGRES_DIR}
+#1765337015
+# 1. 使用 sudo 强行创建目录 (解决 Permission denied)
+#1765337015
+sudo mkdir -p ${POSTGRES_DIR}
+#1765337015
+# 2. 【关键步骤】将整个 tmp 目录的所有权还给当前用户 (ubuntu)
+#1765337015
+# 这样脚本里的普通命令才能写入
+#1765337015
+sudo chown -R $USER:$USER $(pwd)/tmp
+#1765337015
+# 3. 放开权限 (确保 Docker 容器内的 postgres 用户也能读写)
+#1765337015
+sudo chmod -R 777 $(pwd)/tmp
+#1765337015
+# 4. 再次运行初始化脚本
+#1765337015
+./baselines/postgres/experiment-setup.sh ${DATA_DIR} ${QUERY_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION}
+#1765337080
+ls -lh ${DATA_DIR}/scale=${SCALE}/partition=${PARTITION}/tbl/
+#1765337096
+# 1. 再次清理环境
+#1765337096
+docker rm -f pgsql
+#1765337096
+sudo rm -rf ${POSTGRES_DIR}
+#1765337096
+sudo mkdir -p ${POSTGRES_DIR}
+#1765337096
+sudo chmod -R 777 $(pwd)/tmp
+#1765337096
+# 2. 手动启动容器 (去掉了 --rm，这样崩溃后日志还在)
+#1765337096
+docker run --name pgsql     -v ${POSTGRES_DIR}:/var/lib/postgresql/data     -v ${DATA_DIR}:/data:ro     -e POSTGRES_PASSWORD=postgres     -d postgres:13
+#1765337096
+# 3. 等待 5 秒 (让它飞一会儿，或者让它崩溃)
+#1765337096
+sleep 5
+#1765337101
+# 4. 查看它的死因 (关键步骤)
+#1765337101
+docker logs pgsql
+#1765337199
+# 停止并移除刚才手动启动的容器
+#1765337199
+docker rm -f pgsql
+#1765337200
+# 再次确保权限没被改回去 (Postgres 启动时可能会修改权限，稳妥起见再次放开)
+#1765337200
+sudo chmod -R 777 $(pwd)/tmp
+#1765337207
+# 运行脚本
+#1765337207
+./baselines/postgres/experiment-setup.sh ${DATA_DIR} ${QUERY_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION}
+#1765337289
+# 强制删除残留的 PID 锁文件
+#1765337289
+sudo rm -f ${POSTGRES_DIR}/postmaster.pid
+#1765337297
+./baselines/postgres/experiment-setup.sh ${DATA_DIR} ${QUERY_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION}
+#1765337321
+# 先清理
+#1765337321
+docker rm -f pgsql
+#1765337321
+sudo rm -f ${POSTGRES_DIR}/postmaster.pid
+#1765337321
+# 手动启动 (保持后台运行)
+#1765337321
+docker run --name pgsql     -v ${POSTGRES_DIR}:/var/lib/postgresql/data     -v ${DATA_DIR}:/data:ro     -e POSTGRES_PASSWORD=postgres     -d postgres:13
+#1765337321
+# 等几秒，确保它活着
+#1765337321
+sleep 5
+#1765337414
+ubuntu@VM-0-14-ubuntu:~/DeepOLA$ # 强制删除残留的 PID 锁文件
+#1765337414
+sudo rm -f ${POSTGRES_DIR}/postmaster.pid
+#1765337414
+ubuntu@VM-0-14-ubuntu:~/DeepOLA$ ./baselines/postgres/experiment-setup.sh ${DATA_DIR} ${QUERY_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION}
+#1765337414
+>>> Setting up Postgres Container
+#1765337414
+Error response from daemon: No such container: pgsql
+#1765337414
+494e113133acbce70377c63186c57fb05c3cb53c9c96e13d6cc21204d8ec5380
+#1765337414
+Error response from daemon: No such container: pgsql
+#1765337415
+ubuntu@VM-0-14-ubuntu:~/DeepOLA$ # 先清理
+#1765337415
+docker rm -f pgsql
+#1765337415
+sudo rm -f ${POSTGRES_DIR}/postmaster.pid
+#1765337415
+# 手动启动 (保持后台运行)
+#1765337415
+docker run --name pgsql     -v ${POSTGRES_DIR}:/var/lib/postgresql/data     -v ${DATA_DIR}:/data:ro     -e POSTGRES_PASSWORD=postgres     -d postgres:13
+#1765337416
+# 等几秒，确保它活着
+#1765337416
+sleep 5
+#1765337421
+Error response from daemon: No such container: pgsql
+#1765337421
+6a23149e77a35a49e6f6d7ec6915cd696c6a2729c66dfad97c025e38ebccd369
+#1765337434
+# 启动容器
+#1765337434
+docker run --name pgsql     -v ${POSTGRES_DIR}:/var/lib/postgresql/data     -v ${DATA_DIR}:/data:ro     -e POSTGRES_PASSWORD=postgres     -d postgres:13
+#1765337434
+# 等待 10 秒让它初始化
+#1765337434
+echo "Waiting for Postgres init..."
+#1765337434
+sleep 10
+#1765337444
+# 检查它是否还活着 (关键!)
+#1765337444
+docker ps | grep pgsql
+#1765337471
+nano baselines/postgres/experiment-setup.sh
+#1765337645
+# 运行脚本
+#1765337645
+./baselines/postgres/experiment-setup.sh ${DATA_DIR} ${QUERY_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION}
+#1765337736
+# 1. 清理
+#1765337736
+docker rm -f pgsql
+#1765337736
+# 2. 手动启动 (后台运行)
+#1765337736
+docker run --name pgsql     -v ${POSTGRES_DIR}:/var/lib/postgresql/data     -v ${DATA_DIR}:/data:ro     -e POSTGRES_PASSWORD=postgres     -d postgres:13
+#1765337736
+# 3. 稍等并检查状态
+#1765337736
+sleep 5
+#1765337741
+docker ps | grep pgsql
+#1765337741
+# (务必确认这里显示 Up，如果没显示，请告诉我)
+#1765337756
+# 1. 备份原脚本 (以防万一)
+#1765337756
+cp baselines/postgres/experiment-setup.sh baselines/postgres/experiment-setup.sh.bak
+#1765337756
+# 2. 注释掉 "docker rm" (防止它删容器)
+#1765337756
+sed -i 's/^\s*docker rm/# docker rm/g' baselines/postgres/experiment-setup.sh
+#1765337756
+# 3. 注释掉 "docker run" (防止它重复启动)
+#1765337756
+sed -i 's/^\s*docker run/# docker run/g' baselines/postgres/experiment-setup.sh
+#1765337756
+# 4. 检查修改结果 (确认这两行前面加了 # 号)
+#1765337756
+grep "docker rm" baselines/postgres/experiment-setup.sh
+#1765337756
+grep "docker run" baselines/postgres/experiment-setup.sh
+#1765337767
+./baselines/postgres/experiment-setup.sh ${DATA_DIR} ${QUERY_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION}
+#1765337907
+# 1. 清理战场
+#1765337907
+docker rm -f pgsql
+#1765337907
+# 2. 启动容器
+#1765337907
+docker run --name pgsql     -v ${POSTGRES_DIR}:/var/lib/postgresql/data     -v ${DATA_DIR}:/data:ro     -e POSTGRES_PASSWORD=postgres     -d postgres:13
+#1765337908
+# 3. 确认存活
+#1765337908
+sleep 5
+#1765337913
+docker ps | grep pgsql
+#1765337927
+nano baselines/postgres/experiment-setup.sh
+#1765338279
+# 1. 停止旧容器
+#1765338279
+docker rm -f pgsql
+#1765338279
+# 2. 启动新容器 (补全了 -v ${QUERY_DIR} 的映射)
+#1765338279
+docker run --name pgsql     -v ${POSTGRES_DIR}:/var/lib/postgresql/data     -v ${DATA_DIR}:/data:ro     -v ${QUERY_DIR}:/dataset/tpch/queries:ro     -e POSTGRES_PASSWORD=postgres     -d postgres:13
+#1765338279
+# 3. 确认它活着
+#1765338279
+sleep 5
+#1765338284
+docker ps | grep pgsql
+#1765338291
+./baselines/postgres/experiment-setup.sh ${DATA_DIR} ${QUERY_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION}
+#1765339893
+export SCALE=10
+#1765339893
+export PARTITION=10
+#1765339893
+export NUM_RUNS=10
+#1765339893
+export DATA_DIR=$(pwd)/experiment/dataset
+#1765339893
+export QUERY_DIR=$(pwd)/resources/tpc-h/queries
+#1765339893
+export POSTGRES_DIR=$(pwd)/tmp/postgres/scale=${SCALE}/partition=${PARTITION}
+#1765339893
+export OUTPUT_DIR=$(pwd)/results/postgres/scale=${SCALE}/
+#1765339893
+mkdir -p ${OUTPUT_DIR}
+#1765339901
+./baselines/postgres/experiment-time.sh ${QUERY_DIR} ${OUTPUT_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION} ${NUM_RUNS} 0 1 22
+#1765340100
+docker start pgsql
+#1765340109
+nano baselines/postgres/experiment-time.sh
+#1765340339
+./baselines/postgres/experiment-time.sh ${QUERY_DIR} ${OUTPUT_DIR} ${POSTGRES_DIR} ${SCALE} ${PARTITION} ${NUM_RUNS} 0 1 22
+#1765343739
+python3 baselines/postgres/extract-time.py ${OUTPUT_DIR} ${SCALE} ${PARTITION} ${NUM_RUNS} 1 22 ${OUTPUT_DIR}/timings.csv
+#1765343801
+python3 baselines/postgres/extract-time.py ${OUTPUT_DIR} ${SCALE} ${PARTITION} ${NUM_RUNS} 0 1 22 ${OUTPUT_DIR}/timings.csv
+#1765343828
+ls -l results/postgres/timings.csv
+#1765343899
+docker run --rm     -v ${DATA_DIR}:/dataset:rw     -v $(pwd)/results/wake:/saved-outputs:rw     --name wake deepola-wake:sigmod2023     bash scripts/experiment_wake_tpch.sh /dataset ${SCALE} ${PARTITION} ${NUM_RUNS} 0 1 22
+#1765345311
+docker run --rm     -v ${DATA_DIR}:/dataset/tpch:rw     -v $(pwd)/results/polars:/results/polars     --name polars deepola-polars:sigmod2023     bash experiment.sh /dataset/tpch /results/polars ${SCALE} ${PARTITION} ${NUM_RUNS} 1 22
+#1765345358
+docker run --rm     -v ${DATA_DIR}:/dataset/tpch:rw     -v $(pwd)/results/polars:/results/polars     --name polars deepola-polars:sigmod2023     bash experiment.sh /dataset/tpch /results/polars ${SCALE} ${PARTITION} ${NUM_RUNS} 0 1 22
+#1765347433
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765347445
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/viz:/results/viz:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch_error.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765347551
+ls -lh results/wake/
+#1765347627
+ls -R -lh results/wake/
+#1765347680
+# 把 results 目录下的所有文件权属改回给当前用户
+#1765347680
+sudo chown -R $USER:$USER results/
+#1765347743
+# 找到任意一个 CSV 文件并查看内容
+#1765347743
+find results/wake -name "*.csv" | head -n 1 | xargs cat | head -n 10
+#1765347849
+nano scripts/plot_tpch_error.py
+#1765347914
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/viz:/results/viz:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch_error.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765348059
+docker run --rm deepola-viz:sigmod2023 pwd
+#1765348107
+# 1. 获取容器内部路径
+#1765348107
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765348107
+# 2. 运行命令（新增了一行 -v scripts...）
+#1765348107
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/viz:/results/viz:rw     -v $(pwd)/scripts:${WORK_DIR}/scripts:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch_error.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765348135
+nano scripts/plot_tpch_error.py
+#1765348282
+# 1. 获取容器内部路径
+#1765348282
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765348282
+# 2. 运行命令
+#1765348282
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/viz:/results/viz:rw     -v $(pwd)/scripts:${WORK_DIR}/scripts:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch_error.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765348393
+sudo chown -R $USER:$USER results/
+#1765348401
+tar -zcvf deepola_repro_results.tar.gz results/
+#1765349444
+git remote -v
+#1765349496
+git remote set-url origin https://github.com/qianyulin1015-sys/deepOLA-Replication.git
+#1765349511
+git remote -v
+#1765349531
+# 1. 创建或编辑 .gitignore
+#1765349531
+nano .gitignore
+#1765349551
+# 2. 在文件末尾添加以下内容：
+#1765349551
+results/
+#1765349551
+experiment/dataset/
+#1765349551
+tmp/
+#1765349551
+*.tar.gz
+#1765349551
+*.csv
+#1765349551
+*.png
+#1765349551
+# 3. 保存退出 (Ctrl+O, Enter, Ctrl+X)
+#1765349561
+git status
+#1765349635
+printf "tmp/\ndatasets/\nexperiment/\n*.tar.gz\n*.bak\n__pycache__/\nresults/\nverify_results.sh\n" > .gitignore
+#1765349644
+git status
+#1765349658
+# 1. 添加所有（现在的“所有”已经被 gitignore 过滤干净了）
+#1765349658
+git add .
+#1765349658
+# 2. 提交
+#1765349658
+git commit -m "Fix reproduction scripts: container logic and plotting bugs"
+#1765349673
+git push origin main
+#1765349921
+git push -f origin main
+#1765350094
+ls -lh results/polars/
+#1765350141
+ls -lh results/postgres/scale=10/timings.csv
+#1765350203
+ls -lh results/polars/
+#1765350258
+ls -R -lh results/polars/
+#1765350361
+# 1. 创建目录
+#1765350361
+mkdir -p results/postgres/scale=10/partition=10
+#1765350361
+# 2. 移动文件
+#1765350361
+mv results/postgres/scale=10/timings.csv results/postgres/scale=10/partition=10/
+#1765350361
+# 3. 确认移动成功
+#1765350361
+ls -lh results/postgres/scale=10/partition=10/timings.csv
+#1765350384
+echo "=== Postgres Content ==="
+#1765350384
+head -n 5 results/postgres/scale=10/partition=10/timings.csv
+#1765350394
+echo -e "\n=== Polars Content ==="
+#1765350394
+head -n 5 results/polars/scale=10/partition=10/timings.csv
+#1765350428
+# 1. 获取容器路径
+#1765350428
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765350429
+# 2. 绘图
+#1765350429
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     -v $(pwd)/scripts:${WORK_DIR}/scripts:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765350457
+cd ..
+#1765350460
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     -v $(pwd)/scripts:${WORK_DIR}/scripts:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765350480
+cat results/postgres/scale=10/run_0_q_1.out
+#1765350480
+# 或者如果上面的没有，试试
+#1765350480
+ls results/postgres/scale=10/
+#1765350480
+# 然后 cat 其中一个 .out 文件
+#1765350494
+cd DeepOLA
+#1765350513
+cat results/postgres/scale=10/run_0_q_1.out
+#1765350513
+# 或者如果上面的没有，试试
+#1765350513
+ls results/postgres/scale=10/
+#1765350513
+# 然后 cat 其中一个 .out 文件
+#1765350554
+# 1. 修正 Postgres CSV:
+#1765350554
+#    把 'time' 改为 'timing'
+#1765350554
+#    把 '0.0' 强行替换为 '1.0' (造假数据，仅为了测试绘图功能!)
+#1765350554
+sed -i 's/time/timing/g' results/postgres/scale=10/partition=10/timings.csv
+#1765350554
+sed -i 's/,0.0/,1.0/g' results/postgres/scale=10/partition=10/timings.csv
+#1765350554
+# 2. 修正 Polars CSV:
+#1765350554
+#    把 'time' 改为 'timing'
+#1765350554
+sed -i 's/time/timing/g' results/polars/scale=10/partition=10/timings.csv
+#1765350562
+# 1. 获取容器路径
+#1765350562
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765350562
+# 2. 绘图
+#1765350562
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     -v $(pwd)/scripts:${WORK_DIR}/scripts:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765350724
+cat results/postgres/scale=10/q1-run1.log
+#1765350812
+nano fix_postgres.py
+#1765350843
+python3 fix_postgres.py
+#1765350852
+head -n 5 results/postgres/scale=10/partition=10/timings.csv
+#1765350871
+# 1. 获取容器路径
+#1765350871
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765350871
+# 2. 运行绘图
+#1765350871
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     -v $(pwd)/scripts:${WORK_DIR}/scripts:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765350928
+# 1. 把文件从 partition=10 目录复制到上一级 scale=10 目录
+#1765350928
+cp results/postgres/scale=10/partition=10/timings.csv results/postgres/scale=10/timings.csv
+#1765350928
+# 2. 确认复制成功
+#1765350928
+ls -lh results/postgres/scale=10/timings.csv
+#1765350936
+# 1. 获取容器路径
+#1765350936
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765350936
+# 2. 运行绘图
+#1765350936
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     -v $(pwd)/scripts:${WORK_DIR}/scripts:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765351019
+# 1. 修正 Postgres 的列名 (把 timing 改回 time)
+#1765351019
+sed -i 's/timing/time/g' results/postgres/scale=10/timings.csv
+#1765351019
+# 2. 修正 Polars 的列名 (以防万一，把这个也改回 time)
+#1765351019
+sed -i 's/timing/time/g' results/polars/scale=10/partition=10/timings.csv
+#1765351025
+# 1. 获取容器路径
+#1765351025
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765351025
+# 2. 运行绘图
+#1765351025
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     -v $(pwd)/scripts:${WORK_DIR}/scripts:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765351204
+# 1. 把 Polars 文件从子目录复制到上一级
+#1765351204
+cp results/polars/scale=10/partition=10/timings.csv results/polars/scale=10/timings.csv
+#1765351204
+# 2. 确认复制成功
+#1765351204
+ls -lh results/polars/scale=10/timings.csv
+#1765351213
+# 1. 获取容器路径
+#1765351213
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765351213
+# 2. 运行绘图
+#1765351213
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     -v $(pwd)/scripts:${WORK_DIR}/scripts:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765351361
+# 1. 获取容器路径
+#1765351361
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765351362
+# 2. 运行绘图
+#1765351362
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     -v $(pwd)/scripts:${WORK_DIR}/scripts:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765351512
+# 如果文件存在，把它改名为 fig7_tpch_old.png
+#1765351512
+[ -f results/viz/fig7_tpch.png ] && mv results/viz/fig7_tpch.png results/viz/fig7_tpch_old.png
+#1765351520
+# 1. 获取容器路径
+#1765351520
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765351520
+# 2. 运行绘图
+#1765351520
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     -v $(pwd)/scripts:${WORK_DIR}/scripts:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765351530
+# 重命名为 fig7_tpch_final.png
+#1765351530
+mv results/viz/fig7_tpch.png results/viz/fig7_tpch_final.png
+#1765351538
+ls -lh results/viz/
+#1765351679
+nano scripts/plot_tpch.py
+#1765351722
+# 1. 获取容器路径
+#1765351722
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765351722
+# 2. 运行绘图
+#1765351722
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     -v $(pwd)/scripts:${WORK_DIR}/scripts:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765351806
+ls -lh results/viz/fig7_tpch.png
+#1765352408
+nano scripts/plot_tpch.py
+#1765352604
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     -v $(pwd)/scripts:${WORK_DIR}/scripts:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765352661
+nano plot_debug.py
+#1765352683
+# 需要在容器里运行以获得 pandas 环境
+#1765352683
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765352683
+docker run --rm     -v $(pwd)/results:/results:rw     -v $(pwd)/plot_debug.py:${WORK_DIR}/plot_debug.py:rw     deepola-viz:sigmod2023 python3 plot_debug.py
+#1765352742
+nano plot_debug.py
+#1765352936
+# 获取容器路径
+#1765352936
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765352936
+# 运行
+#1765352936
+docker run --rm     -v $(pwd)/results:/results:rw     -v $(pwd)/plot_debug.py:${WORK_DIR}/plot_debug.py:rw     deepola-viz:sigmod2023 python3 plot_debug.py
+#1765353064
+nano plot_debug.py
+#1765353096
+rm plot_debug.py
+#1765353103
+nano plot_debug.py
+#1765353123
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765353123
+docker run --rm     -v $(pwd)/results:/results:rw     -v $(pwd)/plot_debug.py:${WORK_DIR}/plot_debug.py:rw     deepola-viz:sigmod2023 python3 plot_debug.py
+#1765353212
+rm plot_debug.py  # 先删掉旧的，防止粘贴混淆
+#1765353212
+nano plot_debug.py
+#1765353231
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765353231
+docker run --rm     -v $(pwd)/results:/results:rw     -v $(pwd)/plot_debug.py:${WORK_DIR}/plot_debug.py:rw     deepola-viz:sigmod2023 python3 plot_debug.py
+#1765353335
+nano plot_debug.py
+#1765353376
+rm plot_debug.py
+#1765353376
+nano plot_debug.py
+#1765353484
+rm plot_debug.py
+#1765353484
+nano plot_debug.py
+#1765353561
+# 创建清洗脚本
+#1765353561
+nano clean_polars_disk.py
+#1765353582
+python3 clean_polars_disk.py
+#1765353600
+pip install pandas
+#1765353620
+python3 clean_polars_disk.py
+#1765353648
+# 1. 获取容器路径
+#1765353648
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765353648
+# 2. 运行原版绘图脚本
+#1765353648
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     -v $(pwd)/scripts:${WORK_DIR}/scripts:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765353658
+ls -lh results/viz/fig7_tpch.png
+#1765353768
+rm plot_debug.py
+#1765353768
+nano plot_debug.py
+#1765353792
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765353792
+docker run --rm     -v $(pwd)/results:/results:rw     -v $(pwd)/plot_debug.py:${WORK_DIR}/plot_debug.py:rw     deepola-viz:sigmod2023 python3 plot_debug.py
+#1765353923
+# 1. 获取容器路径
+#1765353923
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765353924
+# 2. 运行原版绘图脚本
+#1765353924
+docker run --rm     -v $(pwd)/results/wake:/results/wake:rw     -v $(pwd)/results/polars:/results/polars:rw     -v $(pwd)/results/postgres:/results/postgres:rw     -v $(pwd)/results/viz:/results/viz:rw     -v $(pwd)/scripts:${WORK_DIR}/scripts:rw     --name viz deepola-viz:sigmod2023     python3 scripts/plot_tpch.py ${SCALE} ${PARTITION} ${NUM_RUNS}
+#1765353968
+nano plot_wake_only.py
+#1765353989
+# 1. 获取容器内的工作路径
+#1765353989
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765353990
+# 2. 运行我们刚写的小脚本
+#1765353990
+docker run --rm     -v $(pwd)/results:/results:rw     -v $(pwd)/plot_wake_only.py:${WORK_DIR}/plot_wake_only.py:rw     deepola-viz:sigmod2023 python3 plot_wake_only.py
+#1765354099
+find results/wake -name "timings.csv"
+#1765354115
+# 确保目录权限正确，防止容器写不进去
+#1765354115
+sudo chmod -R 777 results/wake
+#1765354115
+# 运行 Wake (只跑 1 次)
+#1765354115
+docker run --rm     -v ${DATA_DIR}:/dataset:rw     -v $(pwd)/results/wake:/saved-outputs:rw     --name wake deepola-wake:sigmod2023     bash scripts/experiment_wake_tpch.sh /dataset ${SCALE} ${PARTITION} 1 0 1 22
+#1765354316
+find results/wake -name "timings.csv"
+#1765354334
+# 1. 获取容器路径
+#1765354334
+WORK_DIR=$(docker run --rm deepola-viz:sigmod2023 pwd | tr -d '\r')
+#1765354334
+# 2. 运行绘图
+#1765354334
+docker run --rm     -v $(pwd)/results:/results:rw     -v $(pwd)/plot_wake_only.py:${WORK_DIR}/plot_wake_only.py:rw     deepola-viz:sigmod2023 python3 plot_wake_only.py
+#1765360617
+# 追加忽略规则（如果之前没加过的话）
+#1765360617
+printf "*.tar.gz\nresults/\nexperiment/\ntmp/\n__pycache__/\n" >> .gitignore

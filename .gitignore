@@ -1,0 +1,5 @@
+*.tar.gz
+results/
+experiment/
+tmp/
+__pycache__/
