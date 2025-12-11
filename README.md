@@ -180,7 +180,7 @@ This replication includes several stability fixes developed during the reproduct
 
 -----
 
-*Replication performed on [Current Date]. Original code by [illinoisdata/DeepOLA](https://github.com/illinoisdata/DeepOLA).*
+*Replication performed on [10.12.2025]. Original code by [illinoisdata/DeepOLA](https://github.com/illinoisdata/DeepOLA).*
 
 ```
 ```
